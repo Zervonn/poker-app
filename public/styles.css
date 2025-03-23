@@ -108,4 +108,10 @@ body {
   .vote-card:hover {
     transform: scale(1.05);
   }
+  .user-list {
+    margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 16px;
+    color: #333;
+  }
   
