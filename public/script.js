@@ -1,10 +1,11 @@
 // =======================
 // 📌 DOM Element Selection
 // =======================
-const params = new URLSearchParams(window.location.search);
-const username = params.get("user");
-const role = params.get("role");
-const roomId = window.location.pathname.split("/room/")[1];
+// not needed after converting to ejs
+// const params = new URLSearchParams(window.location.search);
+// const username = params.get("user");
+// const role = params.get("role");
+// const roomId = window.location.pathname.split("/room/")[1];
 
 const revealButton = document.getElementById("reveal-button");
 const resetButton = document.getElementById("reset-button");
