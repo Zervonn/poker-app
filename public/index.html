@@ -2,23 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zervonn's Poker</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zervonn's Planning Poker</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-
-  <header>
-    <h1>Zervonn's Poker</h1>
-  </header>
-
-  <main>
-    <p>Collaborative story sizing with your team using Fibonacci cards.</p>
-    <!-- index.html -->
-    <button id="start-session">Start Session</button>
-
+  <main class="lobby">
+    <h1>🃏 Zervonn's Planning Poker</h1>
+    <form id="lobby-form">
+      <input type="text" id="username" placeholder="Your name" required />
+      
+      <div class="lobby-buttons">
+        <button type="button" id="create-room">Create New Room</button>
+        <input type="text" id="room-id" placeholder="Room ID (optional)" />
+        <button type="submit" id="join-room">Join Room</button>
+      </div>
+    </form>
   </main>
-  <script src="/home.js"></script>
 
+  <script src="/lobby.js"></script>
 </body>
 </html>

@@ -82,9 +82,17 @@ socket.on("vote-update", (voteData) => {
     const card = document.createElement("div");
     card.className = "vote-card";
     card.innerHTML = `
-      <div style="font-size: 16px; margin-bottom: 5px;">${user}</div>
-      <div>${voteData[user]}</div>
+      <div class="card-inner">
+        <div class="card-front">
+          <span>👤 ${user}</span>
+        </div>
+        <div class="card-back">
+          <div class="vote-value">${voteData[user]}</div>
+        </div>
+      </div>
     `;
+    setTimeout(() => card.querySelector('.card-inner').classList.add('flipped'), 100);
+
     resultsContainer.appendChild(card);
   }
 });
@@ -106,4 +114,29 @@ socket.on("voting-status", ({ allHaveVoted }) => {
     revealButton.disabled = true;
     revealButton.style.opacity = "0.5";
   }
+});
+const historyContainer = document.getElementById("vote-history");
+
+socket.on("vote-history", (historyData) => {
+  historyContainer.innerHTML = "";
+
+  historyData.forEach((round, index) => {
+    const roundDiv = document.createElement("div");
+    roundDiv.className = "round";
+    roundDiv.innerHTML = `<strong>Round ${index + 1}</strong>`;
+
+    for (let user in round) {
+      const entry = document.createElement("div");
+      entry.textContent = `${user}: ${round[user]}`;
+      roundDiv.appendChild(entry);
+    }
+
+    historyContainer.appendChild(roundDiv);
+  });
+});
+const nextRoundButton = document.getElementById("next-round-button");
+
+nextRoundButton.addEventListener("click", () => {
+  shouldReveal = false;
+  socket.emit("next-round", roomId);
 });
