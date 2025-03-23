@@ -2,6 +2,7 @@
 // Imports & Setup
 // =======================
 
+app.set("view engine", "ejs");
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -25,11 +26,12 @@ app.use(express.json()); // Support JSON bodies
 // =======================
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.render("index");
 });
 
 app.get("/room/:roomId", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "room.html"));
+  const { user, role } = req.query;
+  res.render("room", { roomId: req.params.roomId, user, role });
 });
 
 // =======================

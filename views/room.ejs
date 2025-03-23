@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Planning Poker - Room</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <%- include("partials/header") %>
+
+  <main>
+    <p id="session-info"><%= user %> joined room: <%= roomId %></p>
+    <p id="user-role-info">Your role: <%= role %></p>
+    <p id="facilitator-note"></p>
+
+    <div class="card-container">
+      <div class="card">1</div>
+      <div class="card">2</div>
+      <div class="card">3</div>
+      <div class="card">5</div>
+      <div class="card">8</div>
+      <div class="card">13</div>
+      <div class="card">21</div>
+      <div class="card">?</div>
+    </div>
+
+    <div>
+      <button id="reveal-button">Reveal Votes</button>
+      <button id="next-round-button">Next Vote</button>
+      <button id="reset-button">Reset Votes</button>
+    </div>
+
+    <div id="vote-results" class="vote-results"></div>
+    <div id="vote-history" class="vote-history"></div>
+    <div id="user-list"></div>
+  </main>
+
+  <script>
+    // Pass user/role to JS
+    const roomId = "<%= roomId %>";
+    const username = "<%= user %>";
+    const role = "<%= role %>";
+  </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/script.js"></script>
+</body>
+</html>

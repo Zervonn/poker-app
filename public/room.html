@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zervonn's Poker - Session</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Planning Poker Session</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-
-  <header>
-    <h1>Zervonn's Poker - Session</h1>
+  <header class="global-header">
+    <div class="logo">🃏 Planning Poker</div>
+    <div class="header-right">
+      <span id="user-label"></span>
+      <button id="theme-toggle" class="theme-toggle">🌓</button>
+    </div>
   </header>
 
   <main>
     <p id="session-info"></p>
+    <p id="user-role-info"></p>
+    <p id="facilitator-note"></p>
 
     <p>Select your estimate:</p>
-    <div id="user-list" class="user-list"></div>
-    <p id="user-role-info"></p>
-
     <div class="card-container">
       <div class="card">1</div>
       <div class="card">2</div>
@@ -30,18 +32,18 @@
       <div class="card">?</div>
     </div>
 
-    <button id="reveal-button">Reveal Votes</button>
-    <button id="next-round-button">Next Vote</button>
-    <button id="reset-button">Clear Votes</button>
+    <div>
+      <button id="reveal-button">Reveal Votes</button>
+      <button id="next-round-button">Next Vote</button>
+      <button id="reset-button">Reset Votes</button>
+    </div>
 
     <div id="vote-results" class="vote-results"></div>
-    <h2>History</h2>
-<div id="vote-history" class="vote-history"></div>
-
+    <div id="vote-history" class="vote-history"></div>
+    <div id="user-list"></div>
   </main>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/script.js"></script>
-
 </body>
 </html>

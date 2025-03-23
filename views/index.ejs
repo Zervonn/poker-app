@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Planning Poker</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <%- include("partials/header") %>
+
+  <main>
+    <h1>Welcome to Planning Poker</h1>
+    <form id="lobby-form">
+      <input type="text" id="username" placeholder="Your name" required />
+      <input type="text" id="room-id" placeholder="Room ID to join" />
+      <select id="role" required>
+        <option value="" disabled selected>Select your role</option>
+        <option value="facilitator">Facilitator</option>
+        <option value="developer">Developer</option>
+        <option value="qa">QA</option>
+        <option value="observer">Observer</option>
+      </select>
+      <button type="submit">Join Room</button>
+    </form>
+    <p>or</p>
+    <button id="create-room">Create New Room</button>
+  </main>
+
+  <script src="/lobby.js"></script>
+</body>
+</html>
