@@ -20,3 +20,6 @@ yarn-error.log*
 # Output from builds (optional)
 dist/
 build/
+
+# .gitignore
+init-tables.js
