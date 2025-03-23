@@ -11,6 +11,13 @@
     <h1>🃏 Zervonn's Planning Poker</h1>
     <form id="lobby-form">
       <input type="text" id="username" placeholder="Your name" required />
+      <select id="role" required>
+        <option value="" disabled selected>Select your role</option>
+        <option value="facilitator">Facilitator</option>
+        <option value="developer">Developer</option>
+        <option value="qa">QA</option>
+        <option value="observer">Observer</option>
+      </select>
       
       <div class="lobby-buttons">
         <button type="button" id="create-room">Create New Room</button>

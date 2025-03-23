@@ -8,28 +8,26 @@ const { Server } = require("socket.io");
 const path = require("path");
 
 const app = express();
-const server = http.createServer(app);         // Create an HTTP server using Express
-const io = new Server(server);                 // Attach Socket.IO to the server
+const server = http.createServer(app);        // Create HTTP server
+const io = new Server(server);                // Attach Socket.IO
 
-const PORT = process.env.PORT || 3000;         // Use environment port or default to 3000
+const PORT = process.env.PORT || 3000;
 
 // =======================
 // Middleware
 // =======================
 
-app.use(express.static(path.join(__dirname, "public"))); // Serve static assets from /public
-app.use(express.json()); // Parse incoming JSON bodies
+app.use(express.static(path.join(__dirname, "public"))); // Serve static files
+app.use(express.json()); // Support JSON bodies
 
 // =======================
 // Routes
 // =======================
 
-// Homepage (lobby/index.html)
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Room page (room.html)
 app.get("/room/:roomId", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "room.html"));
 });
@@ -38,12 +36,12 @@ app.get("/room/:roomId", (req, res) => {
 // In-Memory Stores
 // =======================
 
-const votes = {};         // Tracks current votes per room: { roomId: { username: vote } }
-const history = {};       // Tracks previous rounds per room: { roomId: [ { username: vote, ... } ] }
-const usersInRooms = {};  // Tracks who is in each room: { roomId: Set(username) }
+const votes = {};         // Current votes: { roomId: { username: vote } }
+const history = {};       // Vote history: { roomId: [ { username: vote, ... } ] }
+const usersInRooms = {};  // Users: { roomId: { username: { role, isFacilitator } } }
 
 // =======================
-// Socket.IO Real-Time Events
+// Socket.IO Events
 // =======================
 
 io.on("connection", (socket) => {
@@ -52,97 +50,119 @@ io.on("connection", (socket) => {
   // --------------------
   // Join Room
   // --------------------
-  socket.on("join-room", ({ roomId, username }) => {
-    socket.join(roomId); // Join socket.io room
+  socket.on("join-room", ({ roomId, username, role }) => {
+    socket.join(roomId);
     socket.username = username;
     socket.roomId = roomId;
+    socket.role = role;
 
-    // Track user in the room
+    // Init user store for the room if not already set
     if (!usersInRooms[roomId]) {
-      usersInRooms[roomId] = new Set();
+      usersInRooms[roomId] = {};
     }
-    usersInRooms[roomId].add(username);
 
-    // Broadcast updated user list to all clients in room
-    io.to(roomId).emit("user-list", Array.from(usersInRooms[roomId]));
-    console.log(`👤 ${username} joined room ${roomId}`);
+    // First person to join becomes facilitator unless role was explicitly chosen
+    const isFirstUser = Object.keys(usersInRooms[roomId]).length === 0;
+    const isFacilitator = isFirstUser || role === "facilitator";
+
+    // Save user with metadata
+    usersInRooms[roomId][username] = {
+      role,
+      isFacilitator,
+    };
+
+    // Emit updated user list
+    const userList = Object.entries(usersInRooms[roomId]).map(([name, info]) => ({
+      username: name,
+      role: info.role,
+      isFacilitator: info.isFacilitator,
+    }));
+
+    io.to(roomId).emit("user-list", userList);
+    console.log(`👤 ${username} (${role}) joined room ${roomId}`);
   });
 
   // --------------------
-  // Vote Casting
+  // Cast Vote
   // --------------------
   socket.on("cast-vote", ({ roomId, username, vote }) => {
     if (!votes[roomId]) votes[roomId] = {};
     votes[roomId][username] = vote;
 
-    // Broadcast current votes to room
+    // Broadcast current vote state
     io.to(roomId).emit("vote-update", votes[roomId]);
 
-    // Check if all users have voted
-    const allUsers = usersInRooms[roomId] || new Set();
+    // Check if all users (excluding observers) have voted
+    const users = usersInRooms[roomId] || {};
+    const eligibleVoters = Object.entries(users).filter(
+      ([, info]) => info.role !== "observer"
+    );
     const votedUsers = Object.keys(votes[roomId]);
-    const allHaveVoted = allUsers.size > 0 && votedUsers.length === allUsers.size;
 
-    // Notify clients if everyone has voted
+    const allHaveVoted = eligibleVoters.length > 0 &&
+      eligibleVoters.every(([name]) => votedUsers.includes(name));
+
     io.to(roomId).emit("voting-status", { allHaveVoted });
   });
 
   // --------------------
-  // Reset Vote (Clear without saving)
+  // Reset Votes (No Save)
   // --------------------
   socket.on("reset-room", (roomId) => {
-    votes[roomId] = {}; // Just clear current votes
-
-    // Notify clients
+    votes[roomId] = {};
     io.to(roomId).emit("vote-update", {});
     console.log(`🧹 Votes cleared for room ${roomId}`);
   });
 
   // --------------------
-  // Next Round (Save current round, then reset)
+  // Next Round (Save + Reset)
   // --------------------
   socket.on("next-round", (roomId) => {
-    // Save round to history
     if (!history[roomId]) history[roomId] = [];
+
     if (votes[roomId] && Object.keys(votes[roomId]).length > 0) {
       history[roomId].push({ ...votes[roomId] });
     }
 
-    // Clear current votes
     votes[roomId] = {};
-
-    // Notify clients
     io.to(roomId).emit("vote-update", {});
     io.to(roomId).emit("vote-history", history[roomId]);
-    console.log(`➡️ Next vote started for room ${roomId}`);
+
+    console.log(`➡️ Next round started in room ${roomId}`);
   });
 
   // --------------------
-  // Request Current Votes (usually triggered on reveal)
+  // Request Votes (for Reveal)
   // --------------------
   socket.on("request-votes", (roomId) => {
-    socket.to(roomId).emit("vote-update", votes[roomId] || {});
     socket.emit("vote-update", votes[roomId] || {});
+    socket.to(roomId).emit("vote-update", votes[roomId] || {});
   });
 
   // --------------------
-  // Disconnect / Leave Room
+  // Disconnect Handler
   // --------------------
   socket.on("disconnect", () => {
     const { username, roomId } = socket;
 
     if (roomId && usersInRooms[roomId]) {
-      usersInRooms[roomId].delete(username);
+      delete usersInRooms[roomId][username];
 
-      // Update user list in room
-      io.to(roomId).emit("user-list", Array.from(usersInRooms[roomId]));
-      console.log(`🔴 ${username} left room ${roomId}`);
+      // Re-broadcast updated user list
+      const userList = Object.entries(usersInRooms[roomId]).map(([name, info]) => ({
+        username: name,
+        role: info.role,
+        isFacilitator: info.isFacilitator,
+      }));
+
+      io.to(roomId).emit("user-list", userList);
+      console.log(`🔴 ${username} disconnected from room ${roomId}`);
     }
   });
 });
 
 // =======================
-// Start the Server
+// Start Server
 // =======================
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);

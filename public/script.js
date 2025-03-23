@@ -3,6 +3,7 @@
 // =======================
 const params = new URLSearchParams(window.location.search);
 const username = params.get("user");
+const role = params.get("role");
 const roomId = window.location.pathname.split("/room/")[1];
 
 const revealButton = document.getElementById("reveal-button");
@@ -12,6 +13,10 @@ const resultsContainer = document.getElementById("vote-results");
 const userListContainer = document.getElementById("user-list");
 const cards = document.querySelectorAll(".card");
 
+const roleInfo = document.getElementById("user-role-info");
+if (roleInfo) {
+  roleInfo.textContent = `Your role: ${role}`;
+}
 // =======================
 // 🧱 Initial State
 // =======================
@@ -28,23 +33,32 @@ if (sessionInfo) {
 // 🔌 Connect to Server
 // =======================
 const socket = io();
-socket.emit("join-room", { roomId, username });
+socket.emit("join-room", { roomId, username, role });
 
 // =======================
 // 🎴 Card Selection Logic
 // =======================
-cards.forEach(card => {
-  card.addEventListener("click", () => {
-    cards.forEach(c => c.classList.remove("selected"));
-    card.classList.add("selected");
+if (role !== "observer") {
+  // Only allow Dev, QA, Facilitator to vote
+  cards.forEach(card => {
+    card.addEventListener("click", () => {
+      cards.forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
 
-    socket.emit("cast-vote", {
-      roomId,
-      username,
-      vote: card.textContent,
+      socket.emit("cast-vote", {
+        roomId,
+        username,
+        vote: card.textContent,
+      });
     });
   });
-});
+} else {
+  // Optional: visually disable the cards
+  cards.forEach(card => {
+    card.style.opacity = "0.6";
+    card.style.cursor = "not-allowed";
+  });
+}
 
 // =======================
 // 🔁 Reveal Button Logic
