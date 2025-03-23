@@ -1,12 +1,6 @@
 // =======================
 // 📌 DOM Element Selection
 // =======================
-// not needed after converting to ejs
-// const params = new URLSearchParams(window.location.search);
-// const username = params.get("user");
-// const role = params.get("role");
-// const roomId = window.location.pathname.split("/room/")[1];
-
 const revealButton = document.getElementById("reveal-button");
 const resetButton = document.getElementById("reset-button");
 const nextRoundButton = document.getElementById("next-round-button");
@@ -37,23 +31,15 @@ themeToggle.addEventListener("click", () => {
 // =======================
 // 🧱 UI Initialization
 // =======================
-if (sessionInfo) {
-  sessionInfo.textContent = `${username} joined room: ${roomId}`;
-}
-if (roleInfo) {
-  roleInfo.textContent = `Your role: ${role}`;
-}
-if (userLabel) {
-  userLabel.textContent = `Logged in as: ${username}`;
-}
+if (sessionInfo) sessionInfo.textContent = `${username} joined room: ${roomId}`;
+if (roleInfo) roleInfo.textContent = `Your role: ${role}`;
+if (userLabel) userLabel.textContent = `Logged in as: ${username}`;
 
 if (!isFacilitator) {
   revealButton?.remove();
   resetButton?.remove();
   nextRoundButton?.remove();
-  if (note) {
-    note.textContent = "Waiting for facilitator to reveal or reset votes.";
-  }
+  if (note) note.textContent = "Waiting for facilitator to reveal or reset votes.";
 }
 
 // =======================
@@ -70,7 +56,6 @@ if (role !== "observer") {
     card.addEventListener("click", () => {
       cards.forEach(c => c.classList.remove("selected"));
       card.classList.add("selected");
-
       socket.emit("cast-vote", {
         roomId,
         username,
@@ -86,9 +71,10 @@ if (role !== "observer") {
 }
 
 // =======================
-// 🔘 Facilitator Button Logic
+// 🔘 Facilitator Controls
 // =======================
 let shouldReveal = false;
+let currentVotes = {};
 
 revealButton?.addEventListener("click", () => {
   shouldReveal = true;
@@ -109,8 +95,10 @@ nextRoundButton?.addEventListener("click", () => {
 // 📥 Socket Events
 // =======================
 socket.on("vote-update", (voteData) => {
+  currentVotes = voteData;
   if (!shouldReveal) {
     resultsContainer.innerHTML = "";
+    updateUserList();
     return;
   }
 
@@ -119,7 +107,7 @@ socket.on("vote-update", (voteData) => {
     const card = document.createElement("div");
     card.className = "vote-card";
     card.innerHTML = `
-      <div class="card-inner">
+      <div class="card-inner flipped">
         <div class="card-front">
           <span>👤 ${user}</span>
         </div>
@@ -128,17 +116,15 @@ socket.on("vote-update", (voteData) => {
         </div>
       </div>
     `;
-    setTimeout(() => card.querySelector('.card-inner').classList.add('flipped'), 100);
     resultsContainer.appendChild(card);
   }
+
+  updateUserList();
 });
 
 socket.on("user-list", (users) => {
-  userListContainer.innerHTML = `<strong>Users in room:</strong><br/>` +
-    users.map(user => {
-      const star = user.isFacilitator ? "⭐ " : "";
-      return `${star}👤 ${user.username} (${user.role})`;
-    }).join("<br>");
+  window.currentUsers = users;
+  updateUserList();
 });
 
 socket.on("voting-status", ({ allHaveVoted }) => {
@@ -162,3 +148,42 @@ socket.on("vote-history", (historyData) => {
     historyContainer.appendChild(roundDiv);
   });
 });
+
+// =======================
+// 👥 Update User Sidebar
+// =======================
+function updateUserList() {
+  if (!window.currentUsers) return;
+
+  userListContainer.innerHTML = window.currentUsers.map(user => {
+    const voted = currentVotes[user.username] !== undefined;
+    const status = voted ? "🟢 Selected" : "⚪ Not Yet";
+
+    const roleIcon = {
+      facilitator: "⭐",
+      developer: "💻",
+      qa: "🧪",
+      observer: "👀"
+    }[user.role] || "👤";
+
+    return `
+      <div class="user-entry">
+        ${roleIcon} <strong>${user.username}</strong>
+        <span class="role">(${user.role})</span>
+        <span class="vote-status">${status}</span>
+        ${isFacilitator && user.username !== username ? `
+          <button onclick="removeUser('${user.username}')">❌</button>
+        ` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+// =======================
+// ❌ Remove User (Facilitator Only)
+// =======================
+function removeUser(targetUsername) {
+  if (confirm(`Remove ${targetUsername} from the room?`)) {
+    socket.emit("remove-user", { roomId, targetUsername });
+  }
+}

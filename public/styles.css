@@ -1,109 +1,119 @@
-/* =====================
-   THEME VARIABLES
-===================== */
-
 :root {
-  --bg-color: #ffffff;
+  --bg: #ffffff;
   --text-color: #222;
   --card-bg: #f9f9f9;
-  --card-border: #ccc;
+  --card-border: #ddd;
 }
 
 body.dark {
-  --bg-color: #121212;
-  --text-color: #f0f0f0;
-  --card-bg: #1e1e1e;
+  --bg: #1c1c1c;
+  --text-color: #eee;
+  --card-bg: #2c2c2c;
   --card-border: #444;
 }
 
-/* =====================
-   GLOBAL HEADER
-===================== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
 
-/* GLOBAL HEADER */
+/* Global header */
 .global-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--card-bg);
-  padding: 12px 20px;
+  background: var(--card-bg);
+  padding: 10px 20px;
   border-bottom: 1px solid var(--card-border);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
   height: 60px;
   box-sizing: border-box;
 }
 
-.logo {
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.header-right {
+.theme-toggle {
+  border: 1px solid var(--text-color);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 5px;
+  height: 32px;
+  width: 32px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: var(--text-color);
+  justify-content: center;
 }
 
-#user-label {
-  font-weight: 500;
-}
-
-
-/* =====================
-   BASE STYLES
-===================== */
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-main {
-  padding: 40px 20px;
-}
-
-/* =====================
-   HEADER
-===================== */
-
-header {
+/* Room layout */
+.room-layout {
+  display: flex;
+  gap: 30px;
   padding: 20px;
+  flex-wrap: wrap;
 }
 
-/* =====================
-   CARD STYLES
-===================== */
+.room-main {
+  flex: 2;
+  min-width: 300px;
+}
 
+.room-sidebar {
+  flex: 1;
+  background: var(--card-bg);
+  padding: 15px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  min-width: 200px;
+}
+
+.room-sidebar h3 {
+  margin-top: 0;
+  font-size: 16px;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.user-entry {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-entry .role {
+  font-size: 12px;
+  color: gray;
+  margin-left: 5px;
+}
+
+.vote-status {
+  font-size: 12px;
+  color: gray;
+}
+
+/* Card styles */
 .card-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  margin: 20px auto;
-  gap: 12px;
+  gap: 10px;
+  margin: 20px 0;
 }
 
 .card {
-  background-color: var(--card-bg);
+  width: 60px;
+  height: 80px;
+  background: var(--card-bg);
   border: 2px solid var(--card-border);
-  border-radius: 10px;
-  padding: 20px;
-  width: 80px;
-  height: 100px;
-  font-size: 24px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  font-size: 24px;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.3s;
+  transition: transform 0.2s;
+  border-radius: 6px;
 }
 
 .card:hover {
@@ -111,127 +121,60 @@ header {
 }
 
 .card.selected {
-  border-color: #3498db;
-  background-color: #d0ecff;
-}
-
-/* =====================
-   VOTE RESULTS / HISTORY
-===================== */
-
-#vote-results,
-#vote-history {
-  margin-top: 30px;
-  text-align: left;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 16px;
-  line-height: 1.4;
+  background: #ffcb77;
+  border-color: #ffa600;
 }
 
 .vote-card {
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
   padding: 10px;
-  margin-bottom: 10px;
-  background-color: var(--card-bg);
-  color: var(--text-color);
-}
-
-/* =====================
-   BUTTON STYLES
-===================== */
-
-button {
-  padding: 10px 18px;
-  margin: 10px 5px;
-  font-size: 16px;
-  border: none;
+  margin: 10px 0;
   border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  width: 100px;
+  text-align: center;
+  display: inline-block;
 }
 
-button:hover {
-  opacity: 0.9;
+.vote-card .card-inner {
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
 }
 
-#reveal-button {
-  background-color: #2ecc71;
-  color: white;
+.vote-card .card-inner.flipped {
+  transform: rotateY(180deg);
 }
 
-#next-round-button {
-  background-color: #3498db;
-  color: white;
-}
-
-#reset-button {
-  background-color: #e74c3c;
-  color: white;
-}
-
-/* =====================
-   DARK/LIGHT TOGGLE
-===================== */
-
-/* THEME TOGGLE BUTTON */
-.theme-toggle {
-  background: none;
-  border: 1px solid var(--text-color);
-  padding: 6px 10px;
-  font-size: 14px;
-  color: var(--text-color);
-  cursor: pointer;
-  border-radius: 6px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-}
-
-.theme-toggle:hover {
-  background-color: var(--card-border);
-}
-
-/* =====================
-   USER LIST & SESSION INFO
-===================== */
-
-#session-info {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-#user-list {
-  margin-top: 20px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* =====================
-   HISTORY SECTIONS
-===================== */
-
-.vote-history .round {
-  margin-bottom: 15px;
-}
-
-.vote-history .round strong {
-  display: block;
-  margin-bottom: 5px;
-}
-.theme-toggle {
+.vote-card .card-front,
+.vote-card .card-back {
+  backface-visibility: hidden;
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: none;
-  border: 1px solid var(--text-color);
-  padding: 6px 10px;
-  font-size: 14px;
-  color: var(--text-color);
-  cursor: pointer;
-  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+}
+
+.vote-card .card-back {
+  transform: rotateY(180deg);
+}
+
+.vote-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .room-layout {
+    flex-direction: column;
+  }
+
+  .room-sidebar {
+    order: -1;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    width: 50px;
+    height: 70px;
+  }
 }
